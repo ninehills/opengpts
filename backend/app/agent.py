@@ -12,6 +12,7 @@ from langgraph.checkpoint import CheckpointAt
 from app.agent_types.google_agent import get_google_agent_executor
 from app.agent_types.openai_agent import get_openai_agent_executor
 from app.agent_types.xml_agent import get_xml_agent_executor
+from app.agent_types.qianfan_function_agent import get_qianfan_agent_executor
 from app.chatbot import get_chatbot_executor
 from app.checkpoint import RedisCheckpoint
 from app.llms import (
@@ -19,6 +20,7 @@ from app.llms import (
     get_google_llm,
     get_mixtral_fireworks,
     get_openai_llm,
+    get_qianfan_llm,
 )
 from app.retrieval import get_retrieval_executor
 from app.tools import (
@@ -38,6 +40,8 @@ class AgentType(str, Enum):
     CLAUDE2 = "Claude 2"
     BEDROCK_CLAUDE2 = "Claude 2 (Amazon Bedrock)"
     GEMINI = "GEMINI"
+    QIANFAN_EB4 = "ERNIE-Bot 4.0"
+    QIANFAN_EB35 = "ERNIE-3.5-8K-0205"
 
 
 DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant."
@@ -79,6 +83,16 @@ def get_agent_executor(
     elif agent == AgentType.GEMINI:
         llm = get_google_llm()
         return get_google_agent_executor(
+            tools, llm, system_message, interrupt_before_action, CHECKPOINTER
+        )
+    elif agent == AgentType.QIANFAN_EB4:
+        llm = get_qianfan_llm(model="ERNIE-Bot-4")
+        return get_qianfan_agent_executor(
+            tools, llm, system_message, interrupt_before_action, CHECKPOINTER
+        )
+    elif agent == AgentType.QIANFAN_EB35:
+        llm = get_qianfan_llm(model="ERNIE-3.5-8K-0205")
+        return get_qianfan_agent_executor(
             tools, llm, system_message, interrupt_before_action, CHECKPOINTER
         )
     else:
@@ -144,6 +158,8 @@ class LLMType(str, Enum):
     CLAUDE2 = "Claude 2"
     BEDROCK_CLAUDE2 = "Claude 2 (Amazon Bedrock)"
     GEMINI = "GEMINI"
+    QIANFAN_EB4 = "ERNIE-Bot 4.0"
+    QIANFAN_EB35 = "ERNIE-3.5-8K-0205"
     MIXTRAL = "Mixtral"
 
 
@@ -165,6 +181,10 @@ def get_chatbot(
         llm = get_google_llm()
     elif llm_type == LLMType.MIXTRAL:
         llm = get_mixtral_fireworks()
+    elif llm_type == LLMType.QIANFAN_EB4:
+        llm = get_qianfan_llm(model="ERNIE-Bot-4")
+    elif llm_type == LLMType.QIANFAN_EB35:
+        llm = get_qianfan_llm(model="ERNIE-3.5-8K-0205")
     else:
         raise ValueError("Unexpected llm type")
     return get_chatbot_executor(llm, system_message, CHECKPOINTER)
@@ -238,6 +258,10 @@ class ConfigurableRetrieval(RunnableBinding):
             llm = get_google_llm()
         elif llm_type == LLMType.MIXTRAL:
             llm = get_mixtral_fireworks()
+        elif llm_type == LLMType.QIANFAN_EB4:
+            llm = get_qianfan_llm(model="ERNIE-Bot-4")
+        elif llm_type == LLMType.QIANFAN_EB35:
+            llm = get_qianfan_llm(model="ERNIE-3.5-8K-0205")
         else:
             raise ValueError("Unexpected llm type")
         chatbot = get_retrieval_executor(llm, retriever, system_message, CHECKPOINTER)

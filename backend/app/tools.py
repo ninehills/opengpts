@@ -172,10 +172,3 @@ TOOLS = {
 }
 
 TOOL_OPTIONS = {e.value: e.value for e in AvailableTools}
-
-# Check if dependencies and env vars for each tool are available
-for k, v in TOOLS.items():
-    # Connery requires env vars to be valid even if the tool isn't used,
-    # so we'll skip the check for it
-    if k != AvailableTools.CONNERY:
-        v()

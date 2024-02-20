@@ -3,6 +3,7 @@ from functools import lru_cache
 import httpx
 import boto3
 from langchain_community.chat_models import BedrockChat, ChatAnthropic, ChatFireworks
+from app.chat_models.baidu_qianfan_endpoint import QianfanChatEndpoint
 from langchain_google_vertexai import ChatVertexAI
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
@@ -67,3 +68,22 @@ def get_google_llm():
 @lru_cache(maxsize=1)
 def get_mixtral_fireworks():
     return ChatFireworks(model="accounts/fireworks/models/mixtral-8x7b-instruct")
+
+@lru_cache(maxsize=1)
+def get_qianfan_llm(model: str = "ERNIE-Bot-4"):
+    if model == "ERNIE-Bot-4":
+        return QianfanChatEndpoint(
+            model=model,
+            temperature=0.1,
+            init_kwargs={"query_per_second": 0.8},
+            model_kwargs={"disable_search": True},)
+    elif model == "ERNIE-3.5-8K-0205":
+        return QianfanChatEndpoint(
+            model="",
+            endpoint="ernie-3.5-8k-0205",
+            temperature=0.1,
+            init_kwargs={"query_per_second": 0.8},
+            model_kwargs={"disable_search": True},
+        )
+    else:
+        raise NotImplementedError(f"Model {model} not implemented")
